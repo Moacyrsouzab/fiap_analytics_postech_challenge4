@@ -1,0 +1,5 @@
+/// Caminho da pasta data/ do repositório, com a barra no final
+expression PastaDados = "C:\Users\SEU_USUARIO\fiap_analytics_postech_challenge4\data\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 67836f1e-db9f-17ac-5ad7-e6d07ee28db0
+
+	annotation PBI_ResultType = Text
