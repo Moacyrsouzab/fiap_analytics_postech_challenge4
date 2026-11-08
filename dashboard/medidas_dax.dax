@@ -1,0 +1,236 @@
+// ============================================================================
+// Medidas DAX - Amazon Product Performance & Customer Insights (Tech Challenge Fase 4)
+//
+// COMO USAR (Power BI Desktop, modo "Exibição de consulta DAX"):
+//   1. Crie a tabela _Medidas: Página Inicial > Inserir dados > nomeie como _Medidas > Carregar.
+//   2. Abra a Exibição de consulta DAX (ícone na barra lateral esquerda), cole este arquivo inteiro e clique em Executar.
+//      O resultado mostra os valores de conferência (comparar com a tabela "Valores esperados" no fim do arquivo).
+//   3. Clique em "Atualizar modelo com alterações" (aparece acima do DEFINE) para gravar todas as medidas no modelo.
+//   4. Defina o formato de cada medida (coluna "Formato" no fim do arquivo) e organize em pastas de exibição.
+//   5. Exclua a coluna "Coluna1" da _Medidas: ela vira uma tabela só de medidas, no topo da lista de campos.
+//
+// Relacionamentos esperados (Exibição de modelo):
+//   fProdutos[product_id] 1 --> * fReviews[product_id]   (direção única)
+//   fReviews[review_id]   1 --> * fTemas[review_id]      (direção única)
+// ============================================================================
+
+DEFINE
+
+    // ------------------------------------------------------------------ 1. Visão Executiva
+    MEASURE _Medidas[Produtos] =
+        DISTINCTCOUNT ( fProdutos[product_id] )
+
+    MEASURE _Medidas[Produtos com nota] =
+        CALCULATE ( [Produtos], NOT ISBLANK ( fProdutos[rating] ) )
+
+    MEASURE _Medidas[Nota média] =
+        AVERAGE ( fProdutos[rating] )
+
+    MEASURE _Medidas[% nota ≥ 4,0] =
+        DIVIDE ( CALCULATE ( [Produtos], fProdutos[rating] >= 4 ), [Produtos com nota] )
+
+    MEASURE _Medidas[% nota abaixo de 3,8] =
+        DIVIDE ( CALCULATE ( [Produtos], fProdutos[rating] < 3.8 ), [Produtos com nota] )
+
+    // Famílias de variantes dividem as mesmas avaliações: somamos uma vez por família (notebook, Seção 3.1)
+    MEASURE _Medidas[Avaliações] =
+        SUMX (
+            VALUES ( fProdutos[familia] ),
+            CALCULATE ( MAX ( fProdutos[rating_count] ) )
+        )
+
+    MEASURE _Medidas[Famílias de produtos] =
+        DISTINCTCOUNT ( fProdutos[familia] )
+
+    MEASURE _Medidas[Avaliações por produto (mediana)] =
+        CALCULATE ( MEDIAN ( fProdutos[rating_count] ), NOT ISBLANK ( fProdutos[rating] ) )
+
+    MEASURE _Medidas[Desconto médio] =
+        CALCULATE ( AVERAGE ( fProdutos[desconto] ), NOT ISBLANK ( fProdutos[rating] ) )
+
+    MEASURE _Medidas[Preço original mediano] =
+        CALCULATE ( MEDIAN ( fProdutos[actual_price] ), NOT ISBLANK ( fProdutos[rating] ) )
+
+    MEASURE _Medidas[Preço final mediano] =
+        CALCULATE ( MEDIAN ( fProdutos[discounted_price] ), NOT ISBLANK ( fProdutos[rating] ) )
+
+    MEASURE _Medidas[Economia média] =
+        CALCULATE ( AVERAGE ( fProdutos[economia] ), NOT ISBLANK ( fProdutos[rating] ) )
+
+    // Participação de cada categoria/subcategoria no total selecionado
+    MEASURE _Medidas[% do portfólio] =
+        DIVIDE (
+            [Produtos com nota],
+            CALCULATE ( [Produtos com nota], ALLSELECTED ( fProdutos[categoria], fProdutos[subcategoria] ) )
+        )
+
+    MEASURE _Medidas[% das avaliações] =
+        DIVIDE (
+            [Avaliações],
+            CALCULATE ( [Avaliações], ALLSELECTED ( fProdutos[categoria], fProdutos[subcategoria] ) )
+        )
+
+    // Quanto das avaliações está nos 10% de famílias mais avaliadas
+    MEASURE _Medidas[Concentração top 10%] =
+        VAR Familias =
+            FILTER (
+                ADDCOLUMNS (
+                    VALUES ( fProdutos[familia] ),
+                    "@aval", CALCULATE ( MAX ( fProdutos[rating_count] ) )
+                ),
+                NOT ISBLANK ( [@aval] )
+            )
+        VAR Qtd = INT ( COUNTROWS ( Familias ) * 0.1 )
+        VAR Topo = TOPN ( Qtd, Familias, [@aval], DESC )
+        RETURN
+            DIVIDE ( SUMX ( Topo, [@aval] ), SUMX ( Familias, [@aval] ) )
+
+    // ------------------------------------------------------------------ 2. Produtos e Categorias
+    MEASURE _Medidas[Nota ponderada média] =
+        AVERAGE ( fProdutos[nota_ponderada] )
+
+    MEASURE _Medidas[Produtos em risco de reputação] =
+        CALCULATE ( [Produtos], fProdutos[risco_reputacao] = TRUE () )
+
+    MEASURE _Medidas[Famílias em risco de reputação] =
+        CALCULATE ( [Famílias de produtos], fProdutos[risco_reputacao] = TRUE () )
+
+    MEASURE _Medidas[Famílias com oportunidade de visibilidade] =
+        CALCULATE ( [Famílias de produtos], fProdutos[oportunidade_visibilidade] = TRUE () )
+
+    MEASURE _Medidas[Produtos com alerta nos comentários] =
+        CALCULATE ( [Produtos], fProdutos[alerta_comentarios] = TRUE () )
+
+    // ------------------------------------------------------------------ 3. Preços e Estratégia Comercial
+    MEASURE _Medidas[% com desconto acima de 60%] =
+        DIVIDE ( CALCULATE ( [Produtos com nota], fProdutos[discount_percentage] > 60 ), [Produtos com nota] )
+
+    MEASURE _Medidas[% nota ≥ 4,0 com até 20% de desconto] =
+        CALCULATE ( [% nota ≥ 4,0], fProdutos[faixa_desconto] = "0-20%" )
+
+    MEASURE _Medidas[% nota ≥ 4,0 com mais de 80% de desconto] =
+        CALCULATE ( [% nota ≥ 4,0], fProdutos[faixa_desconto] = "81-94%" )
+
+    // ------------------------------------------------------------------ 4. Customer Insights
+    MEASURE _Medidas[Avaliações de texto] =
+        COUNTROWS ( fReviews )
+
+    MEASURE _Medidas[% avaliações positivas] =
+        DIVIDE ( CALCULATE ( [Avaliações de texto], fReviews[sentimento] = "Positiva" ), [Avaliações de texto] )
+
+    MEASURE _Medidas[% avaliações negativas] =
+        DIVIDE ( CALCULATE ( [Avaliações de texto], fReviews[sentimento] = "Negativa" ), [Avaliações de texto] )
+
+    MEASURE _Medidas[Sentimento médio] =
+        AVERAGE ( fReviews[score_sentimento] )
+
+    MEASURE _Medidas[Menções ao tema] =
+        COUNTROWS ( fTemas )
+
+    // Com o tema no eixo: o filtro de tema não chega à fReviews, então o denominador é o total de avaliações
+    MEASURE _Medidas[% das avaliações que citam o tema] =
+        DIVIDE ( [Menções ao tema], [Avaliações de texto] )
+
+    MEASURE _Medidas[% negativas quando cita o tema] =
+        DIVIDE ( CALCULATE ( [Menções ao tema], fReviews[sentimento] = "Negativa" ), [Menções ao tema] )
+
+    MEASURE _Medidas[% positivas quando cita o tema] =
+        DIVIDE ( CALCULATE ( [Menções ao tema], fReviews[sentimento] = "Positiva" ), [Menções ao tema] )
+
+    MEASURE _Medidas[Vezes a média negativa] =
+        DIVIDE ( [% negativas quando cita o tema], [% avaliações negativas] )
+
+    MEASURE _Medidas[% cita durabilidade] =
+        DIVIDE (
+            CALCULATE ( [Menções ao tema], fTemas[tema] = "Durabilidade e defeitos" ),
+            [Avaliações de texto]
+        )
+
+    MEASURE _Medidas[% negativas sobre durabilidade] =
+        CALCULATE ( [% negativas quando cita o tema], fTemas[tema] = "Durabilidade e defeitos" )
+
+    // 493 produtos não têm avaliações de texto ligadas (variantes ou famílias sem separação confiável).
+    // Usar num cartão da página de detalhe, para ela não aparecer vazia sem explicação.
+    MEASURE _Medidas[Aviso sem avaliações de texto] =
+        IF (
+            ISBLANK ( [Avaliações de texto] ),
+            "Este produto não tem avaliações de texto na amostra analisada (variante de outro anúncio ou texto sem separação confiável).",
+            BLANK ()
+        )
+
+    // Filtro visual da tabela de avaliações (página 4): o tema escolhido não chega à fReviews pelo relacionamento
+    MEASURE _Medidas[Filtro tema da avaliação] =
+        // 1 quando nenhum tema está selecionado ou quando a avaliação cita o tema escolhido
+        IF ( NOT ISFILTERED ( fTemas[tema] ) || [Menções ao tema] > 0, 1 )
+
+    // ------------------------------------------------------------------ 5. Títulos dinâmicos (respondem aos filtros)
+    // Uso: no visual, Título > fx > Valor do campo > escolher a medida
+    MEASURE _Medidas[Título Visão Executiva] =
+        FORMAT ( [Produtos], "#,0" ) & " produtos, nota média "
+            & FORMAT ( [Nota média], "0.00" ) & " e "
+            & FORMAT ( [% nota ≥ 4,0], "0%" ) & " deles com nota 4,0 ou mais"
+
+    MEASURE _Medidas[Título Desconto] =
+        "Com mais de 80% de desconto, só "
+            & FORMAT ( [% nota ≥ 4,0 com mais de 80% de desconto], "0%" )
+            & " dos produtos têm nota 4,0 ou mais (contra "
+            & FORMAT ( [% nota ≥ 4,0 com até 20% de desconto], "0%" ) & " com até 20%)"
+
+    MEASURE _Medidas[Título Temas] =
+        "Quando citam durabilidade, "
+            & FORMAT ( [% negativas sobre durabilidade], "0%" )
+            & " das avaliações são negativas (média: "
+            & FORMAT ( [% avaliações negativas], "0%" ) & ")"
+
+// Conferência: os valores devem bater com a Seção 7.1 do notebook
+EVALUATE
+ROW (
+    "Produtos", [Produtos],
+    "Produtos com nota", [Produtos com nota],
+    "Nota média", [Nota média],
+    "% nota ≥ 4,0", [% nota ≥ 4,0],
+    "% nota abaixo de 3,8", [% nota abaixo de 3,8],
+    "Avaliações (famílias)", [Avaliações],
+    "Famílias", [Famílias de produtos],
+    "Mediana de avaliações", [Avaliações por produto (mediana)],
+    "Desconto médio", [Desconto médio],
+    "Preço final mediano", [Preço final mediano],
+    "Economia média", [Economia média],
+    "Concentração top 10%", [Concentração top 10%],
+    "Famílias em risco", [Famílias em risco de reputação],
+    "Famílias oportunidade", [Famílias com oportunidade de visibilidade],
+    "Produtos com alerta", [Produtos com alerta nos comentários],
+    "Avaliações de texto", [Avaliações de texto],
+    "% positivas", [% avaliações positivas],
+    "% negativas", [% avaliações negativas],
+    "% nota ≥ 4,0 até 20%", [% nota ≥ 4,0 com até 20% de desconto],
+    "% nota ≥ 4,0 acima de 80%", [% nota ≥ 4,0 com mais de 80% de desconto],
+    "% negativas durabilidade", [% negativas sobre durabilidade]
+)
+
+// ============================================================================
+// VALORES ESPERADOS (notebook)                 | FORMATO DA MEDIDA
+// Produtos                      1.351          | Número inteiro, separador de milhar
+// Produtos com nota             1.350          | Número inteiro, separador de milhar
+// Nota média                    4,09           | Decimal, 2 casas
+// % nota ≥ 4,0                  74,8%          | Porcentagem, 1 casa
+// % nota abaixo de 3,8          10,5%          | Porcentagem, 1 casa
+// Avaliações (famílias)         16.796.897     | Número inteiro, separador de milhar
+// Famílias                      1.188          | Número inteiro, separador de milhar
+// Mediana de avaliações         4.740          | Número inteiro, separador de milhar
+// Desconto médio                46,7%          | Porcentagem, 1 casa
+// Preço final mediano           ₹896           | Moeda personalizada: "₹"#,0
+// Economia média                ₹2.388         | Moeda personalizada: "₹"#,0
+// Concentração top 10%          60,0%          | Porcentagem, 1 casa
+// Famílias em risco             40             | Número inteiro
+// Famílias oportunidade         58             | Número inteiro
+// Produtos com alerta           14             | Número inteiro
+// Avaliações de texto           6.718          | Número inteiro, separador de milhar
+// % positivas                   84,1%          | Porcentagem, 1 casa
+// % negativas                   9,8%           | Porcentagem, 1 casa
+// % nota ≥ 4,0 até 20%          83,4%          | Porcentagem, 1 casa
+// % nota ≥ 4,0 acima de 80%     56,9%          | Porcentagem, 1 casa
+// % negativas durabilidade      27,4%          | Porcentagem, 1 casa
+// Demais medidas de %           -              | Porcentagem, 1 casa
+// "Vezes a média negativa"      -              | Decimal, 1 casa (ex.: 2,8)
+// ============================================================================
