@@ -2,7 +2,7 @@
 
 ## Caminho rápido: abrir o projeto pronto
 
-A pasta `Amazon_Insights_TechChallenge4/` é um projeto do Power BI (`.pbip`) com tudo o que está descrito abaixo já montado: as 5 consultas do Power Query, os relacionamentos, a ordenação das faixas, os formatos, as 39 medidas, o tema e as 8 páginas (6 visíveis, o detalhe do produto e a dica de ferramenta).
+A pasta `Amazon_Insights_TechChallenge4/` é um projeto do Power BI (`.pbip`) com tudo o que está descrito abaixo já montado: as 5 consultas do Power Query, os relacionamentos, a ordenação das faixas, os formatos, as 47 medidas, o tema e as 8 páginas (6 visíveis, o detalhe do produto e a dica de ferramenta).
 
 1. Rode o notebook uma vez, para gerar os CSVs em `data/processed/`.
 2. Abra `Amazon_Insights_TechChallenge4/Amazon_Insights_TechChallenge4.pbip` no Power BI Desktop. Se a versão for antiga e reclamar do formato, atualize o Power BI Desktop ou ative em Arquivo > Opções > Recursos de visualização: "Projeto do Power BI (.pbip)" e "Formato de metadados de relatório avançado (PBIR)".
