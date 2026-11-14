@@ -1,0 +1,87 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 852.38305001469371,
+            "y": 25
+          },
+          "nodeIndex": "_Medidas",
+          "nodeLineageTag": "e80ce671-be4d-49fb-fadf-6b029a8abc27",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1136.3830500146937,
+            "y": 123
+          },
+          "nodeIndex": "dPercentil",
+          "nodeLineageTag": "3b76e2d9-1e5e-4b8f-857f-639c09680671",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 618.38305001469371,
+            "y": -28.422348979922589
+          },
+          "nodeIndex": "fProdutos",
+          "nodeLineageTag": "c8249b92-c41e-5e86-dff3-b4acad53b877",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 334.20156119318523,
+            "y": 30.42234897992256
+          },
+          "nodeIndex": "fReviews",
+          "nodeLineageTag": "df67ff08-adee-d846-8305-048cb8da316e",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 87.5627617996771
+          },
+          "nodeIndex": "fTemas",
+          "nodeLineageTag": "336bac8e-059b-a7ad-b9e2-807655dfa45c",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas as tabelas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas as tabelas",
+  "defaultDiagram": "Todas as tabelas"
+}

@@ -1,0 +1,104 @@
+/// Uma linha por avaliação de texto, com o sentimento calculado no notebook
+table fReviews
+	lineageTag: df67ff08-adee-d846-8305-048cb8da316e
+
+	column review_id
+		dataType: string
+		lineageTag: f455f0eb-348b-230f-41de-c37f0cd8ae77
+		summarizeBy: none
+		sourceColumn: review_id
+
+		annotation SummarizationSetBy = User
+
+	column product_id
+		dataType: string
+		isHidden
+		lineageTag: e741b3e9-bc7c-6c4d-d7b3-f77c85dddd70
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = User
+
+	column titulo
+		dataType: string
+		lineageTag: 0a1a38fc-8005-f1f5-b5ba-2eb18817656a
+		summarizeBy: none
+		sourceColumn: titulo
+
+		annotation SummarizationSetBy = User
+
+	column texto
+		dataType: string
+		lineageTag: 528543d4-801f-3c03-ada8-61baf54d42ec
+		summarizeBy: none
+		sourceColumn: texto
+
+		annotation SummarizationSetBy = User
+
+	column score_sentimento
+		dataType: double
+		formatString: 0.000
+		lineageTag: 9f040ed2-ab8f-74d2-c4e2-69fac1de5e87
+		summarizeBy: none
+		sourceColumn: score_sentimento
+
+		annotation SummarizationSetBy = User
+
+	column sentimento
+		dataType: string
+		lineageTag: 97a6dd2d-5ca2-e963-5907-78b737ab414b
+		summarizeBy: none
+		sourceColumn: sentimento
+		sortByColumn: ordem_sentimento
+
+		annotation SummarizationSetBy = User
+
+	column ordem_sentimento
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 28296b9e-7a21-dc82-3191-5c3df07339f6
+		summarizeBy: none
+		sourceColumn: ordem_sentimento
+
+		annotation SummarizationSetBy = User
+
+	partition fReviews = m
+		mode: import
+		source =
+				let
+				    Fonte = Csv.Document(
+				        File.Contents(PastaDados & "processed\reviews_sentimento.csv"),
+				        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+				    ),
+				    CabecalhosPromovidos = Table.PromoteHeaders(Fonte, [PromoteAllScalars = true]),
+				    // Os temas ficam na fTemas (formato longo); aqui mantemos só o necessário
+				    ColunasMantidas = Table.SelectColumns(
+				        CabecalhosPromovidos,
+				        {"review_id", "product_id", "titulo", "texto", "score_sentimento", "sentimento"}
+				    ),
+				    // O score vem com ponto decimal, por isso a cultura en-US
+				    TiposDefinidos = Table.TransformColumnTypes(
+				        ColunasMantidas,
+				        {
+				            {"review_id", type text},
+				            {"product_id", type text},
+				            {"titulo", type text},
+				            {"texto", type text},
+				            {"score_sentimento", type number},
+				            {"sentimento", type text}
+				        },
+				        "en-US"
+				    ),
+				    // Para ordenar Positiva > Neutra > Negativa nos visuais (Ordenar por coluna)
+				    OrdemDoSentimento = Table.AddColumn(
+				        TiposDefinidos,
+				        "ordem_sentimento",
+				        each if [sentimento] = "Positiva" then 1 else if [sentimento] = "Neutra" then 2 else 3,
+				        Int64.Type
+				    )
+				in
+				    OrdemDoSentimento
+
+	annotation PBI_ResultType = Table
+

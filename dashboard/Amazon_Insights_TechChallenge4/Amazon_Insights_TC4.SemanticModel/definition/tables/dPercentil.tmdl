@@ -1,0 +1,24 @@
+/// Eixo da curva de concentração (1% a 100% dos produtos)
+table dPercentil
+	lineageTag: 3b76e2d9-1e5e-4b8f-857f-639c09680671
+
+	column Percentil
+		dataType: double
+		formatString: 0%
+		lineageTag: c68882c9-0551-40c1-970d-0c9076ef3796
+		summarizeBy: none
+		sourceColumn: Percentil
+
+		annotation SummarizationSetBy = User
+
+	partition dPercentil = m
+		mode: import
+		source =
+				let
+				    // Percentis de 1% a 100%, usados no eixo da curva de concentração (Pareto)
+				    Fonte = Table.FromColumns ( { List.Transform ( { 1 .. 100 }, each _ / 100 ) }, type table [ Percentil = number ] )
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table
+

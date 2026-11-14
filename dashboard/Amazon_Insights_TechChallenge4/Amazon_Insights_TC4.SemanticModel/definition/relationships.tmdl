@@ -1,0 +1,8 @@
+relationship 3826c4ce-14fb-366e-81ba-3d4c7055071d
+	fromColumn: fReviews.product_id
+	toColumn: fProdutos.product_id
+
+relationship d3567c48-7eea-53df-0c89-2aa6d6cb8256
+	fromColumn: fTemas.review_id
+	toColumn: fReviews.review_id
+
