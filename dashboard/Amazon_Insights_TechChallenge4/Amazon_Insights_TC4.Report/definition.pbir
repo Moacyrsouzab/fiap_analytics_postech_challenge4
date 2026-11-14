@@ -1,0 +1,8 @@
+{
+  "version": "4.0",
+  "datasetReference": {
+    "byPath": {
+      "path": "../Amazon_Insights_TC4.SemanticModel"
+    }
+  }
+}
