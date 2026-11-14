@@ -8,7 +8,7 @@ Dar mais desconto deixa o cliente mais satisfeito? Analisamos 1.351 produtos e 6
 - Emerson Henrique de Lima e Sousa — RM 373751
 - Moacyr Souza Barros — RM 373412
 
-**Vídeo executivo:** []
+**Vídeo executivo:** [https://youtu.be/qqOUBZu-Lg0]
 
 ---
 
