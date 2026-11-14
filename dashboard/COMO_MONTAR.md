@@ -1,13 +1,11 @@
 # Como montar o dashboard no Power BI
 
-> **Revisão de 13/11/2026:** o projeto `.pbip` ganhou fundo desenhado, navegação lateral, 4 análises novas e a página 6 (Metodologia). O que mudou e o que conferir: `MELHORIAS_DASHBOARD.md`. O roteiro manual abaixo descreve a versão anterior.
-
 ## Caminho rápido: abrir o projeto pronto
 
 A pasta `Amazon_Insights_TechChallenge4/` é um projeto do Power BI (`.pbip`) com tudo o que está descrito abaixo já montado: as 4 consultas do Power Query, os relacionamentos, a ordenação das faixas, os formatos, as 39 medidas, o tema e as 7 páginas (5 visíveis, o detalhe do produto e a dica de ferramenta).
 
 1. Rode o notebook uma vez, para gerar os CSVs em `data/processed/`.
-2. Abra `Amazon_Insights_TechChallenge4/Amazon_Insights_TC4.pbip` no Power BI Desktop. Se a versão for antiga e reclamar do formato, atualize o Power BI Desktop ou ative em Arquivo > Opções > Recursos de visualização: "Projeto do Power BI (.pbip)" e "Formato de metadados de relatório avançado (PBIR)".
+2. Abra `Amazon_Insights_TechChallenge4/Amazon_Insights_TechChallenge4.pbip` no Power BI Desktop. Se a versão for antiga e reclamar do formato, atualize o Power BI Desktop ou ative em Arquivo > Opções > Recursos de visualização: "Projeto do Power BI (.pbip)" e "Formato de metadados de relatório avançado (PBIR)".
 3. Página Inicial > Transformar dados > **Editar parâmetros** > `PastaDados`: coloque o caminho da pasta `data\` do repositório, com a barra no final.
 4. **Atualizar**. Depois, confira os números com a consulta de conferência do `medidas_dax.dax` (passo 3 abaixo).
 5. Passe página por página e ajuste o que ficar desalinhado. As linhas de referência da dispersão (X = 4.740 e Y = 4,0) e a escala logarítmica estão configuradas, mas vale conferir no painel de formatação.
