@@ -2,16 +2,19 @@
 // Medidas DAX - Amazon Product Performance & Customer Insights (Tech Challenge Fase 4)
 //
 // COMO USAR (Power BI Desktop, modo "Exibição de consulta DAX"):
+//   0. Pré-requisito: as consultas fProdutos, fReviews, fTemas e dPercentil já carregadas
+//      (pasta power_query/). A dPercentil é usada pela curva de concentração e fica sem relacionamento.
 //   1. Crie a tabela _Medidas: Página Inicial > Inserir dados > nomeie como _Medidas > Carregar.
 //   2. Abra a Exibição de consulta DAX (ícone na barra lateral esquerda), cole este arquivo inteiro e clique em Executar.
 //      O resultado mostra os valores de conferência (comparar com a tabela "Valores esperados" no fim do arquivo).
-//   3. Clique em "Atualizar modelo com alterações" (aparece acima do DEFINE) para gravar todas as medidas no modelo.
-//   4. Defina o formato de cada medida (coluna "Formato" no fim do arquivo) e organize em pastas de exibição.
+//   3. Clique em "Atualizar modelo com alterações" (aparece acima do DEFINE) para gravar as 47 medidas no modelo.
+//   4. Defina o formato e a pasta de exibição de cada medida (tabelas no fim do arquivo).
 //   5. Exclua a coluna "Coluna1" da _Medidas: ela vira uma tabela só de medidas, no topo da lista de campos.
 //
 // Relacionamentos esperados (Exibição de modelo):
 //   fProdutos[product_id] 1 --> * fReviews[product_id]   (direção única)
 //   fReviews[review_id]   1 --> * fTemas[review_id]      (direção única)
+//   dPercentil: tabela desconectada (sem relacionamento)
 // ============================================================================
 
 DEFINE
@@ -85,6 +88,40 @@ DEFINE
         RETURN
             DIVIDE ( SUMX ( Topo, [@aval] ), SUMX ( Familias, [@aval] ) )
 
+    // Curva de Pareto: parte das avaliações que fica com os p% de famílias mais avaliadas
+    // Eixo X do gráfico de linhas: dPercentil[Percentil]
+    MEASURE _Medidas[Concentração acumulada] =
+        VAR p = SELECTEDVALUE ( dPercentil[Percentil] )
+        VAR Familias =
+            FILTER (
+                ADDCOLUMNS (
+                    VALUES ( fProdutos[familia] ),
+                    "@aval", CALCULATE ( MAX ( fProdutos[rating_count] ) )
+                ),
+                NOT ISBLANK ( [@aval] )
+            )
+        VAR Qtd = INT ( COUNTROWS ( Familias ) * p )
+        VAR Topo = TOPN ( Qtd, Familias, [@aval], DESC )
+        RETURN
+            IF ( NOT ISBLANK ( p ), DIVIDE ( SUMX ( Topo, [@aval] ), SUMX ( Familias, [@aval] ) ) + 0 )
+
+    // Referência da curva: como seria se todos os produtos tivessem o mesmo número de avaliações
+    MEASURE _Medidas[Linha de igualdade] =
+        SELECTEDVALUE ( dPercentil[Percentil] )
+
+    // Grupos de engajamento × satisfação: participação de cada quadrante em produtos e em avaliações
+    MEASURE _Medidas[% dos produtos no grupo] =
+        DIVIDE (
+            [Produtos],
+            CALCULATE ( [Produtos], ALLSELECTED ( fProdutos[quadrante], fProdutos[ordem_quadrante] ) )
+        )
+
+    MEASURE _Medidas[% das avaliações no grupo] =
+        DIVIDE (
+            [Avaliações],
+            CALCULATE ( [Avaliações], ALLSELECTED ( fProdutos[quadrante], fProdutos[ordem_quadrante] ) )
+        )
+
     // ------------------------------------------------------------------ 2. Produtos e Categorias
     MEASURE _Medidas[Nota ponderada média] =
         AVERAGE ( fProdutos[nota_ponderada] )
@@ -101,6 +138,10 @@ DEFINE
     MEASURE _Medidas[Produtos com alerta nos comentários] =
         CALCULATE ( [Produtos], fProdutos[alerta_comentarios] = TRUE () )
 
+    // Ranking de subcategorias: só as que têm amostra suficiente
+    MEASURE _Medidas[% nota ≥ 4,0 (subcategorias com 15+ produtos)] =
+        IF ( [Produtos com nota] >= 15, [% nota ≥ 4,0] )
+
     // ------------------------------------------------------------------ 3. Preços e Estratégia Comercial
     MEASURE _Medidas[% com desconto acima de 60%] =
         DIVIDE ( CALCULATE ( [Produtos com nota], fProdutos[discount_percentage] > 60 ), [Produtos com nota] )
@@ -110,6 +151,10 @@ DEFINE
 
     MEASURE _Medidas[% nota ≥ 4,0 com mais de 80% de desconto] =
         CALCULATE ( [% nota ≥ 4,0], fProdutos[faixa_desconto] = "81-94%" )
+
+    // Mapa de calor preço × desconto: esconde as células com poucos produtos
+    MEASURE _Medidas[% nota ≥ 4,0 (células com 8+ produtos)] =
+        IF ( [Produtos com nota] >= 8, [% nota ≥ 4,0] )
 
     // ------------------------------------------------------------------ 4. Customer Insights
     MEASURE _Medidas[Avaliações de texto] =
@@ -171,16 +216,32 @@ DEFINE
             & FORMAT ( [% nota ≥ 4,0], "0%" ) & " deles com nota 4,0 ou mais"
 
     MEASURE _Medidas[Título Desconto] =
-        "Com mais de 80% de desconto, só "
+        "Acima de 80% de desconto, só "
             & FORMAT ( [% nota ≥ 4,0 com mais de 80% de desconto], "0%" )
-            & " dos produtos têm nota 4,0 ou mais (contra "
+            & " têm nota ≥ 4,0 ("
             & FORMAT ( [% nota ≥ 4,0 com até 20% de desconto], "0%" ) & " com até 20%)"
 
     MEASURE _Medidas[Título Temas] =
         "Quando citam durabilidade, "
             & FORMAT ( [% negativas sobre durabilidade], "0%" )
-            & " das avaliações são negativas (média: "
+            & " são negativas (média: "
             & FORMAT ( [% avaliações negativas], "0%" ) & ")"
+
+    MEASURE _Medidas[Título Pareto] =
+        "10% dos produtos mais avaliados concentram "
+            & FORMAT ( [Concentração top 10%], "0%" ) & " das avaliações"
+
+    MEASURE _Medidas[Título Quadrantes] =
+        VAR Grupo = "Atenção: alcance alto, nota baixa"
+        VAR Qtd = CALCULATE ( [Produtos], fProdutos[quadrante] = Grupo )
+        VAR Pct =
+            DIVIDE (
+                CALCULATE ( [Avaliações], fProdutos[quadrante] = Grupo ),
+                CALCULATE ( [Avaliações], ALLSELECTED ( fProdutos[quadrante] ) )
+            )
+        RETURN
+            FORMAT ( Qtd, "#,0" ) & " produtos muito vistos com nota abaixo de 4,0 somam "
+                & FORMAT ( Pct, "0%" ) & " das avaliações"
 
 // Conferência: os valores devem bater com a Seção 7.1 do notebook
 EVALUATE
@@ -233,63 +294,21 @@ ROW (
 // % negativas durabilidade      27,4%          | Porcentagem, 1 casa
 // Demais medidas de %           -              | Porcentagem, 1 casa
 // "Vezes a média negativa"      -              | Decimal, 1 casa (ex.: 2,8)
+// Medidas "Título ..."          -              | Texto (usar em Título > fx > Valor do campo)
 // ============================================================================
 
-
-// =====================================================================
-// MEDIDAS ADICIONADAS NA REVISÃO VISUAL (nov/2026)
-// Tabela auxiliar dPercentil: power_query/04_dPercentil.m (sem relacionamento)
-// =====================================================================
-
-// Pasta: 1. Visão Executiva | Formato: 0.0%
-[Concentração acumulada] =
-// Curva de Pareto: parte das avaliações que fica com os p% de famílias mais avaliadas
-VAR p = SELECTEDVALUE ( dPercentil[Percentil] )
-VAR Familias =
-    FILTER (
-        ADDCOLUMNS (
-            VALUES ( fProdutos[familia] ),
-            "@aval", CALCULATE ( MAX ( fProdutos[rating_count] ) )
-        ),
-        NOT ISBLANK ( [@aval] )
-    )
-VAR Qtd = INT ( COUNTROWS ( Familias ) * p )
-VAR Topo = TOPN ( Qtd, Familias, [@aval], DESC )
-RETURN
-    IF ( NOT ISBLANK ( p ), DIVIDE ( SUMX ( Topo, [@aval] ), SUMX ( Familias, [@aval] ) ) + 0 )
-
-// Pasta: 1. Visão Executiva | Formato: 0.0%
-[Linha de igualdade] =
-// Referência: como seria se todos os produtos tivessem o mesmo número de avaliações
-SELECTEDVALUE ( dPercentil[Percentil] )
-
-// Pasta: 5. Títulos
-[Título Pareto] =
-"10% dos produtos mais avaliados concentram "
-    & FORMAT ( [Concentração top 10%], "0%" ) & " das avaliações"
-
-// Pasta: 1. Visão Executiva | Formato: 0.0%
-[% dos produtos no grupo] =
-DIVIDE ( [Produtos], CALCULATE ( [Produtos], ALLSELECTED ( fProdutos[quadrante] ) ) )
-
-// Pasta: 1. Visão Executiva | Formato: 0.0%
-[% das avaliações no grupo] =
-DIVIDE ( [Avaliações], CALCULATE ( [Avaliações], ALLSELECTED ( fProdutos[quadrante] ) ) )
-
-// Pasta: 5. Títulos
-[Título Quadrantes] =
-VAR Grupo = "Atenção: alcance alto, nota baixa"
-VAR Qtd = CALCULATE ( [Produtos], fProdutos[quadrante] = Grupo )
-VAR Pct = DIVIDE ( CALCULATE ( [Avaliações], fProdutos[quadrante] = Grupo ), CALCULATE ( [Avaliações], ALLSELECTED ( fProdutos[quadrante] ) ) )
-RETURN
-    FORMAT ( Qtd, "#,0" ) & " produtos muito vistos com nota abaixo de 4,0 somam " & FORMAT ( Pct, "0%" ) & " das avaliações"
-
-// Pasta: 3. Preços | Formato: 0.0%
-[% nota ≥ 4,0 (células com 8+ produtos)] =
-// Mapa de calor preço × desconto: esconde as células com poucos produtos
-IF ( [Produtos com nota] >= 8, [% nota ≥ 4,0] )
-
-// Pasta: 2. Produtos e Categorias | Formato: 0.0%
-[% nota ≥ 4,0 (subcategorias com 15+ produtos)] =
-// Ranking de subcategorias: só as que têm amostra suficiente
-IF ( [Produtos com nota] >= 15, [% nota ≥ 4,0] )
+// ============================================================================
+// PASTAS DE EXIBIÇÃO (as mesmas do .pbip / .pbix)
+// 1. Visão Executiva        Produtos, Produtos com nota, Nota média, % nota ≥ 4,0, % nota abaixo de 3,8,
+//                           Avaliações, Famílias de produtos, Avaliações por produto (mediana),
+//                           Desconto médio, Preço original mediano, Preço final mediano, Economia média,
+//                           % do portfólio, % das avaliações, Concentração top 10%, Concentração acumulada,
+//                           Linha de igualdade, % dos produtos no grupo, % das avaliações no grupo
+// 2. Produtos e Categorias  Nota ponderada média, Produtos/Famílias em risco de reputação,
+//                           Famílias com oportunidade de visibilidade, Produtos com alerta nos comentários,
+//                           % nota ≥ 4,0 (subcategorias com 15+ produtos)
+// 3. Preços                 % com desconto acima de 60%, % nota ≥ 4,0 com até 20% / mais de 80% de desconto,
+//                           % nota ≥ 4,0 (células com 8+ produtos)
+// 4. Customer Insights      as 13 medidas de avaliações, temas e sentimento (inclui o aviso e o filtro de tema)
+// 5. Títulos                Título Visão Executiva, Título Desconto, Título Temas, Título Pareto, Título Quadrantes
+// ============================================================================
