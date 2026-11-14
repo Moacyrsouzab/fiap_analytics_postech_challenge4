@@ -1,0 +1,150 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "dp03",
+  "position": {
+    "x": 236,
+    "y": 80,
+    "z": 2000,
+    "height": 260,
+    "width": 327.39,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "multiRowCard",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fProdutos"
+                    }
+                  },
+                  "Property": "nome_curto"
+                }
+              },
+              "queryRef": "fProdutos.nome_curto",
+              "nativeQueryRef": "nome_curto",
+              "displayName": "Produto"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fProdutos"
+                    }
+                  },
+                  "Property": "categoria"
+                }
+              },
+              "queryRef": "fProdutos.categoria",
+              "nativeQueryRef": "categoria",
+              "displayName": "Categoria"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fProdutos"
+                    }
+                  },
+                  "Property": "subcategoria"
+                }
+              },
+              "queryRef": "fProdutos.subcategoria",
+              "nativeQueryRef": "subcategoria",
+              "displayName": "Subcategoria"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fProdutos"
+                    }
+                  },
+                  "Property": "quadrante"
+                }
+              },
+              "queryRef": "fProdutos.quadrante",
+              "nativeQueryRef": "quadrante",
+              "displayName": "Grupo"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

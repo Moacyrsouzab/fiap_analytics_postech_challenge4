@@ -1,0 +1,146 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.3.0/schema.json",
+  "name": "customer_insights",
+  "displayName": "4. Customer Insights",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "image": {
+            "image": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'fundo_customer_insights.png'"
+                  }
+                }
+              },
+              "url": {
+                "expr": {
+                  "ResourcePackageItem": {
+                    "PackageName": "RegisteredResources",
+                    "PackageType": 1,
+                    "ItemName": "fundo_customer_insights.png"
+                  }
+                }
+              },
+              "scaling": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Fit'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#EAEFF4'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "ci05",
+      "target": "ci07",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci08",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci09",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci10",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci11",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci12",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci05",
+      "target": "ci13",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci07",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci08",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci09",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci10",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci11",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci12",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ci06",
+      "target": "ci13",
+      "type": "NoFilter"
+    }
+  ]
+}

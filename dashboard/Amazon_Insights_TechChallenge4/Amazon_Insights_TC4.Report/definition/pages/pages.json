@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "pageOrder": [
+    "visao_executiva",
+    "produtos_categorias",
+    "precos",
+    "customer_insights",
+    "recomendacoes",
+    "metodologia",
+    "detalhe_produto",
+    "tooltip_produto"
+  ],
+  "activePageName": "visao_executiva"
+}
