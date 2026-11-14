@@ -50,8 +50,9 @@ fiap_analytics_postech_challenge4/
 │   └── Amazon_Product_Insights_TechChallenge4.ipynb
 ├── results/                            ← 13 gráficos gerados pelo notebook (01_ a 13_)
 ├── dashboard/
-│   ├── Amazon_Insights_TechChallenge4.pbix
-│   ├── Amazon_Insights_TechChallenge4/  ← mesmo dashboard em formato de projeto (.pbip, versionável)
+│   ├── Amazon_Insights_TechChallenge4/ 
+│       ├── Amazon_Insights_TechChallenge4.pbix
+│       └── Amazon_Insights_TechChallenge4.pbip
 │   ├── COMO_MONTAR.md                  ← passo a passo do modelo e das páginas
 │   ├── medidas_dax.dax                 ← medidas DAX + consulta de conferência
 │   ├── tema_amazon_insights.json       ← tema do Power BI (paleta do projeto)
